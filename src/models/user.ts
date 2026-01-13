@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose'
-import argon2 from 'argon2'
+import { verifyPassword } from '@/utils/password'
 import { IUser } from '@/types/user'
 
 const userSchema = new Schema<IUser>(
@@ -37,7 +37,7 @@ userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   try {
-    return await argon2.verify(this.password, candidatePassword)
+    return await verifyPassword(this.password, candidatePassword)
   } catch (error) {
     return false
   }
