@@ -1,6 +1,7 @@
 import jwt, { SignOptions } from 'jsonwebtoken'
 import { IJWTPayload, IPasswordResetTokenPayload } from '@/types/auth'
 import { JWT_SECRET, JWT_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN, PASSWORD_RESET_TOKEN_EXPIRES_IN } from '@/config/env'
+import { createError } from '@/types/errors'
 
 /**
  * JWT utility functions for token generation, verification, and decoding
@@ -102,14 +103,14 @@ export const verifyToken = <T extends IJWTPayload | IPasswordResetTokenPayload>(
     return decoded
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      throw new Error('Token has expired')
+      throw createError(401, 'Token has expired')
     }
     if (error instanceof jwt.JsonWebTokenError) {
-      throw new Error('Invalid token')
+      throw createError(401, 'Invalid token')
     }
     if (error instanceof jwt.NotBeforeError) {
-      throw new Error('Token not active yet')
+      throw createError(401, 'Token not active yet')
     }
-    throw new Error('Token verification failed')
+    throw createError(401, 'Token verification failed')
   }
 }
