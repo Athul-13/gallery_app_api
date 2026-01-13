@@ -45,6 +45,14 @@ export interface IPasswordResetInput {
 }
 
 /**
+ * Change password input (for authenticated users)
+ */
+export interface IChangePasswordInput {
+  currentPassword: string
+  newPassword: string
+}
+
+/**
  * Express Request with user (for authenticated routes)
  */
 export interface IAuthenticatedRequest extends Request {
