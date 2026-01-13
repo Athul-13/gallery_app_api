@@ -1,3 +1,5 @@
+import { Request } from 'express'
+
 /**
  * JWT Payload interface
  */
