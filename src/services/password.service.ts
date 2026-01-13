@@ -8,12 +8,13 @@ import { userRepository } from '@/repositories'
 import { hashPassword, verifyPassword, validatePasswordStrength } from '@/utils/password'
 import { verifyToken, generatePasswordResetToken } from '@/utils/jwt'
 import { logger } from '@/config/logger'
+import { IPasswordService } from './interface'
 
 /**
  * Password service
  * Handles password reset and password change operations
  */
-export class PasswordService {
+export class PasswordService implements IPasswordService {
   constructor(
     private repo: IUserRepository = userRepository 
   ) {}

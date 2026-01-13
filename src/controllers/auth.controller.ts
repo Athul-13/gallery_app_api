@@ -1,5 +1,5 @@
-import { Response } from 'express'
-import { AuthService, PasswordService } from '@/services'
+import { Request, Response } from 'express'
+import { IAuthService, IPasswordService } from '@/services'
 import {
   ICreateUser,
   ILoginCredentials,
@@ -8,11 +8,13 @@ import {
   IChangePasswordInput,
   IAuthenticatedRequest,
 } from '@/types'
+import { IAuthController } from './interface'
+import { setAccessTokenCookie, setRefreshTokenCookie, getRefreshTokenCookie, clearAuthCookies } from '@/utils/cookie'
 
-export class AuthController {
+export class AuthController implements IAuthController {
   constructor(
-    private authService: AuthService = authService,
-    private passwordService: PasswordService = passwordService
+    private authService: IAuthService = authService,
+    private passwordService: IPasswordService = passwordService
   ) {}
 
   async register(req: { body: ICreateUser }, res: Response) {
@@ -22,12 +24,29 @@ export class AuthController {
 
   async login(req: { body: ILoginCredentials }, res: Response) {
     const result = await this.authService.loginUser(req.body)
-    res.status(200).json(result)
+    
+    setAccessTokenCookie(res, result.tokens.accessToken)
+    setRefreshTokenCookie(res, result.tokens.refreshToken)
+    
+    res.status(200).json({
+      user: result.user,
+    })
   }
 
-  async refreshToken(req: { body: { refreshToken: string } }, res: Response) {
-    const result = await this.authService.refreshAccessToken(req.body.refreshToken)
-    res.status(200).json(result)
+  async refreshToken(req: Request & { body: { refreshToken?: string } }, res: Response) {
+    const refreshToken = req.body.refreshToken || getRefreshTokenCookie(req)
+    
+    if (!refreshToken) {
+      return res.status(401).json({ success: false, message: 'Refresh token is required' })
+    }
+    
+    const result = await this.authService.refreshAccessToken(refreshToken)
+    
+    setAccessTokenCookie(res, result.accessToken)
+    
+    return res.status(200).json({
+      user: result.user,
+    })
   }
 
   async changePassword(req: IAuthenticatedRequest & { body: IChangePasswordInput }, res: Response) {
@@ -51,4 +70,11 @@ export class AuthController {
     const result = await this.passwordService.resetPassword(req.body)
     res.status(200).json(result)
   }
+
+  async logout(_req: Request, res: Response) {
+    clearAuthCookies(res)
+    res.status(200).json({ success: true, message: 'Logged out successfully' })
+  }
 }
+
+export const authController = new AuthController()

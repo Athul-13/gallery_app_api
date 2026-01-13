@@ -1,11 +1,12 @@
 import { createError } from '@/types'
 import { IUserRepository } from '@/repositories/interface'
 import { userRepository } from '@/repositories'
+import { IUserService } from './interface'
 
 /**
  * User service
  */
-export class UserService {
+export class UserService implements IUserService {
   constructor(
     private repo: IUserRepository = userRepository
   ) {}

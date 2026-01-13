@@ -8,12 +8,13 @@ import { userRepository } from '@/repositories'
 import { hashPassword, validatePasswordStrength } from '@/utils/password'
 import { generateTokenPair, verifyToken } from '@/utils/jwt'
 import { logger } from '@/config/logger'
+import { IAuthService } from './interface'
 
 /**
  * Authentication service
  * Handles user registration, login, and token refresh
  */
-export class AuthService {
+export class AuthService implements IAuthService {
   constructor(
     private repo: IUserRepository = userRepository
   ) {}
