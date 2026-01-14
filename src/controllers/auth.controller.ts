@@ -13,8 +13,8 @@ import { setAccessTokenCookie, setRefreshTokenCookie, getRefreshTokenCookie, cle
 
 export class AuthController implements IAuthController {
   constructor(
-    private authService: IAuthService = authService,
-    private passwordService: IPasswordService = passwordService
+    private authService: IAuthService,
+    private passwordService: IPasswordService
   ) {}
 
   async register(req: { body: ICreateUser }, res: Response) {
@@ -76,5 +76,3 @@ export class AuthController implements IAuthController {
     res.status(200).json({ success: true, message: 'Logged out successfully' })
   }
 }
-
-export const authController = new AuthController()

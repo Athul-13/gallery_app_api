@@ -4,7 +4,6 @@ import {
   createError,
 } from '@/types'
 import { IUserRepository } from '@/repositories/interface'
-import { userRepository } from '@/repositories'
 import { hashPassword, verifyPassword, validatePasswordStrength } from '@/utils/password'
 import { verifyToken, generatePasswordResetToken } from '@/utils/jwt'
 import { logger } from '@/config/logger'
@@ -16,7 +15,7 @@ import { IPasswordService } from './interface'
  */
 export class PasswordService implements IPasswordService {
   constructor(
-    private repo: IUserRepository = userRepository 
+    private repo: IUserRepository
   ) {}
 
   /**
@@ -126,5 +125,3 @@ export class PasswordService implements IPasswordService {
     }
   }
 }
-
-export const passwordService = new PasswordService()

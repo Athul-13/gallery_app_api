@@ -12,7 +12,7 @@ import {
 
 export class AuthRoute implements IRoutes {
   constructor(
-    private authController: IAuthController = authController,
+    private authController: IAuthController
   ) {}
 
   getRouter(): Router {

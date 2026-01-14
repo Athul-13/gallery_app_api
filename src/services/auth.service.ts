@@ -4,7 +4,6 @@ import {
   createError,
 } from '@/types'
 import { IUserRepository } from '@/repositories/interface'
-import { userRepository } from '@/repositories'
 import { hashPassword, validatePasswordStrength } from '@/utils/password'
 import { generateTokenPair, verifyToken } from '@/utils/jwt'
 import { logger } from '@/config/logger'
@@ -16,7 +15,7 @@ import { IAuthService } from './interface'
  */
 export class AuthService implements IAuthService {
   constructor(
-    private repo: IUserRepository = userRepository
+    private repo: IUserRepository
   ) {}
 
   /**
@@ -124,9 +123,3 @@ export class AuthService implements IAuthService {
     }
   }
 }
-
-export const authService = new AuthService()
-
-export const registerUser = (userData: ICreateUser) => authService.registerUser(userData)
-export const loginUser = (credentials: ILoginCredentials) => authService.loginUser(credentials)
-export const refreshAccessToken = (refreshToken: string) => authService.refreshAccessToken(refreshToken)

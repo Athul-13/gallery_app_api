@@ -1,6 +1,5 @@
 import { createError } from '@/types'
 import { IUserRepository } from '@/repositories/interface'
-import { userRepository } from '@/repositories'
 import { IUserService } from './interface'
 
 /**
@@ -8,7 +7,7 @@ import { IUserService } from './interface'
  */
 export class UserService implements IUserService {
   constructor(
-    private repo: IUserRepository = userRepository
+    private repo: IUserRepository
   ) {}
 
   /**
@@ -31,5 +30,3 @@ export class UserService implements IUserService {
     }
   }
 }
-
-export const userService = new UserService()
