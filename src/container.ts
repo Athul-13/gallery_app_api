@@ -1,9 +1,9 @@
-import { AuthController } from '@/controllers'
-import { AuthService, PasswordService, UserService } from '@/services'
-import { UserRepository } from '@/repositories'
-import { IAuthController } from '@/controllers/interface'
-import { IAuthService, IPasswordService, IUserService } from '@/services/interface'
-import { IUserRepository } from '@/repositories/interface'
+import { AuthController, ImageController } from '@/controllers'
+import { AuthService, PasswordService, UserService, ImageService } from '@/services'
+import { UserRepository, ImageRepository } from '@/repositories'
+import { IAuthController, IImageController } from '@/controllers/interface'
+import { IAuthService, IPasswordService, IUserService, IImageService } from '@/services/interface'
+import { IUserRepository, IImageRepository } from '@/repositories/interface'
 
 class Container {
   private instances = new Map<string, any>()
@@ -34,6 +34,7 @@ class Container {
   initialize(): void {
     // Register repositories (bottom layer)
     this.register<IUserRepository>('userRepository', () => new UserRepository())
+    this.register<IImageRepository>('imageRepository', () => new ImageRepository())
 
     // Register services (middle layer)
     this.register<IAuthService>('authService', () => 
@@ -48,12 +49,20 @@ class Container {
       new UserService(this.get<IUserRepository>('userRepository'))
     )
 
+    this.register<IImageService>('imageService', () => 
+      new ImageService(this.get<IImageRepository>('imageRepository'))
+    )
+
     // Register controllers (top layer)
     this.register<IAuthController>('authController', () => 
       new AuthController(
         this.get<IAuthService>('authService'),
         this.get<IPasswordService>('passwordService')
       )
+    )
+
+    this.register<IImageController>('imageController', () => 
+      new ImageController(this.get<IImageService>('imageService'))
     )
   }
 }
@@ -64,7 +73,10 @@ container.initialize()
 
 // Export convenience getters
 export const getUserRepository = () => container.get<IUserRepository>('userRepository')
+export const getImageRepository = () => container.get<IImageRepository>('imageRepository')
 export const getAuthService = () => container.get<IAuthService>('authService')
 export const getPasswordService = () => container.get<IPasswordService>('passwordService')
 export const getUserService = () => container.get<IUserService>('userService')
+export const getImageService = () => container.get<IImageService>('imageService')
 export const getAuthController = () => container.get<IAuthController>('authController')
+export const getImageController = () => container.get<IImageController>('imageController')

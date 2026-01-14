@@ -1,4 +1,4 @@
-import { IAuthController } from "@/controllers"
+import { IAuthController } from "@/controllers/interface"
 import { Router } from "express"
 import { authenticate, validateBody } from "@/middleware"
 import { IRoutes } from "./interface"

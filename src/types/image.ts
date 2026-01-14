@@ -1,4 +1,5 @@
 import { Document } from "mongoose"
+import { IAuthenticatedRequest } from "./auth"
 
 /**
  * Image document interface (extends Mongoose Document)
@@ -52,4 +53,40 @@ export interface IImageResponse {
 export interface IBulkImageResponse {
   images: IImageResponse[]
   total: number
+}
+
+/**
+ * Upload images request body
+ */
+export interface IUploadImagesBody {
+  title?: string // For single upload
+  titles?: string[] // For bulk upload
+}
+
+/**
+ * Upload images request (with multer files)
+ */
+export interface IUploadImagesRequest extends IAuthenticatedRequest {
+  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] }
+  file?: Express.Multer.File
+  body: IUploadImagesBody
+}
+
+/**
+ * Get image by ID request (with params)
+ */
+export interface IGetImageByIdRequest extends IAuthenticatedRequest {
+  params: {
+    id: string
+  }
+}
+
+/**
+ * Get user images request (with query params)
+ */
+export interface IGetUserImagesRequest extends IAuthenticatedRequest {
+  query: {
+    page?: string
+    limit?: string
+  }
 }

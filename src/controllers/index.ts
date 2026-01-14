@@ -1,4 +1,2 @@
 export * from './auth.controller'
-
-// Export controller interfaces
-export * from './interface'
+export * from './image.controller'
