@@ -18,7 +18,6 @@ export class ImageRoute implements IRoutes {
     router.use(authenticate)
 
     // Upload image(s) - handles both single and bulk uploads
-    // Uses uploadAny middleware to accept files from any field name
     router.post('/upload', uploadAny, this.imageController.uploadImages)
 
     // Get all images for authenticated user
