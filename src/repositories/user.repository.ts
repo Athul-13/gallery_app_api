@@ -48,6 +48,3 @@ export class UserRepository implements IUserRepository {
     return !!user
   }
 }
-
-// Export singleton instance
-export const userRepository = new UserRepository()

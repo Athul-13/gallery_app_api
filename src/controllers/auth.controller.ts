@@ -17,12 +17,12 @@ export class AuthController implements IAuthController {
     private passwordService: IPasswordService
   ) {}
 
-  async register(req: { body: ICreateUser }, res: Response) {
+  register = async (req: { body: ICreateUser }, res: Response) => {
     const user = await this.authService.registerUser(req.body)
     res.status(201).json(user)
-  }
+  };
 
-  async login(req: { body: ILoginCredentials }, res: Response) {
+  login = async (req: { body: ILoginCredentials }, res: Response) => {
     const result = await this.authService.loginUser(req.body)
     
     setAccessTokenCookie(res, result.tokens.accessToken)
@@ -31,9 +31,9 @@ export class AuthController implements IAuthController {
     res.status(200).json({
       user: result.user,
     })
-  }
+  };
 
-  async refreshToken(req: Request & { body: { refreshToken?: string } }, res: Response) {
+  refreshToken = async (req: Request & { body: { refreshToken?: string } }, res: Response) => {
     const refreshToken = req.body.refreshToken || getRefreshTokenCookie(req)
     
     if (!refreshToken) {
@@ -47,9 +47,9 @@ export class AuthController implements IAuthController {
     return res.status(200).json({
       user: result.user,
     })
-  }
+  };
 
-  async changePassword(req: IAuthenticatedRequest & { body: IChangePasswordInput }, res: Response) {
+  changePassword = async (req: IAuthenticatedRequest & { body: IChangePasswordInput }, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ success: false, message: 'User not authenticated' })
     }
@@ -59,20 +59,20 @@ export class AuthController implements IAuthController {
       req.body.newPassword
     )
     return res.status(200).json(result)
-  }
+  };
 
-  async requestPasswordReset(req: { body: IPasswordResetRequest }, res: Response) {
+  requestPasswordReset = async (req: { body: IPasswordResetRequest }, res: Response) => {
     const result = await this.passwordService.requestPasswordReset(req.body.email)
     res.status(200).json(result)
-  }
+  };
 
-  async resetPassword(req: { body: IPasswordResetInput }, res: Response) {
+  resetPassword = async (req: { body: IPasswordResetInput }, res: Response) => {
     const result = await this.passwordService.resetPassword(req.body)
     res.status(200).json(result)
-  }
+  };  
 
-  async logout(_req: Request, res: Response) {
+  logout = async (_req: Request, res: Response) => {
     clearAuthCookies(res)
     res.status(200).json({ success: true, message: 'Logged out successfully' })
-  }
+  };
 }
