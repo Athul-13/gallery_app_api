@@ -17,7 +17,11 @@ const envSchema = z.object({
   AWS_REGION: z.string().default('us-east-1'),
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
-  AWS_S3_BUCKET_NAME: z.string().optional(),
+  AWS_S3_BUCKET_NAME: z.string().min(1, 'S3 bucket name is required'),
+  AWS_S3_BUCKET_URL: z.string().optional(),
+  AWS_MAX_FILE_SIZE: z.string().default('5242880'), // 5MB in bytes
+  AWS_ALLOWED_MIME_TYPES: z.string().default('image/jpeg,image/png,image/webp,image/gif'),
+  AWS_S3_ACL: z.string().default('public-read'),
 })
 
 // Validate and parse environment variables
@@ -45,4 +49,8 @@ export const {
   AWS_ACCESS_KEY_ID,
   AWS_SECRET_ACCESS_KEY,
   AWS_S3_BUCKET_NAME,
+  AWS_S3_BUCKET_URL,
+  AWS_MAX_FILE_SIZE,
+  AWS_ALLOWED_MIME_TYPES,
+  AWS_S3_ACL,
 } = env

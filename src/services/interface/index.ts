@@ -1,3 +1,4 @@
 export * from './auth.service.interface'
 export * from './password.service.interface'
 export * from './user.service.interface'
+export * from './image.service.interface'
