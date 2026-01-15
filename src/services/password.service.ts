@@ -7,7 +7,13 @@ import { IUserRepository } from '@/repositories/interface'
 import { hashPassword, verifyPassword, validatePasswordStrength } from '@/utils/password'
 import { verifyToken, generatePasswordResetToken } from '@/utils/jwt'
 import { logger } from '@/config/logger'
+import { sendEmail } from '@/utils/email'
+import { generatePasswordResetEmailTemplate, generatePasswordResetEmailText } from '@/utils/emailTemplates'
+import { CORS_ORIGIN } from '@/config/env'
 import { IPasswordService } from './interface'
+
+// Use CORS_ORIGIN as frontend URL, fallback to localhost for development
+const FRONTEND_URL = CORS_ORIGIN || 'http://localhost:5173'
 
 /**
  * Password service
@@ -36,8 +42,28 @@ export class PasswordService implements IPasswordService {
       type: 'password-reset',
     })
 
-    logger.info(`Password reset requested for: ${user.email}`)
+    // Generate reset link
+    const resetLink = `${FRONTEND_URL}/reset-password?token=${resetToken}`
 
+    // Send password reset email
+    try {
+      const htmlTemplate = generatePasswordResetEmailTemplate(resetLink, user.email.split('@')[0])
+      const textTemplate = generatePasswordResetEmailText(resetLink, user.email.split('@')[0])
+      
+      await sendEmail(
+        user.email,
+        'Reset Your Password - Galley',
+        htmlTemplate,
+        textTemplate
+      )
+      
+      logger.info(`Password reset email sent to: ${user.email}`)
+    } catch (error) {
+      logger.error(`Failed to send password reset email to ${user.email}:`, error)
+      // Still return success message to prevent email enumeration
+    }
+
+    // In development, also return the token for testing
     return {
       message: 'If the email exists, a password reset link has been sent',
       resetToken: process.env.NODE_ENV === 'development' ? resetToken : undefined,

@@ -3,6 +3,7 @@ import { App } from './app'
 import { connectDatabase } from './config/database'
 import { PORT } from './config/env'
 import { logger } from './config/logger'
+import { initializeEmailTransporter } from './utils/email'
 
 export class Server {
   private app: App
@@ -15,6 +16,8 @@ export class Server {
   async start(): Promise<void> {
     await connectDatabase()
     logger.info('Database connected successfully')
+    
+    await initializeEmailTransporter()
     
     const expressApp = this.app.getApp()
     this.server = expressApp.listen(PORT, () => {

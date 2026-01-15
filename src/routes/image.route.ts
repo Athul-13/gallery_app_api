@@ -1,8 +1,13 @@
 import { IImageController } from '@/controllers/interface'
 import { Router } from 'express'
-import { authenticate } from '@/middleware'
+import { authenticate, validateBody } from '@/middleware'
 import { IRoutes } from './interface'
 import { uploadAny } from '@/middleware/upload.middleware'
+import {
+  uploadImagesSchema,
+  updateImageSchema,
+  bulkUpdateOrderSchema,
+} from '@/validations/image.validation'
 
 /**
  * Image routes
@@ -18,7 +23,12 @@ export class ImageRoute implements IRoutes {
     router.use(authenticate)
 
     // Upload image(s) - handles both single and bulk uploads
-    router.post('/upload', uploadAny, this.imageController.uploadImages)
+    router.post(
+      '/upload',
+      uploadAny,
+      validateBody(uploadImagesSchema),
+      this.imageController.uploadImages
+    )
 
     // Get all images for authenticated user
     router.get('/get', this.imageController.getUserImages)
@@ -28,10 +38,19 @@ export class ImageRoute implements IRoutes {
 
     // Update image by ID (must come before GET /:id to avoid route conflicts)
     // Accepts optional file upload for replacing the image
-    router.put('/:id/update', uploadAny, this.imageController.updateImage)
+    router.put(
+      '/:id/update',
+      uploadAny,
+      validateBody(updateImageSchema),
+      this.imageController.updateImage
+    )
 
     // Bulk update order for multiple images
-    router.put('/bulk-update-order', this.imageController.bulkUpdateOrder)
+    router.put(
+      '/bulk-update-order',
+      validateBody(bulkUpdateOrderSchema),
+      this.imageController.bulkUpdateOrder
+    )
 
     // Get image by ID (must be last to avoid conflicts with other routes)
     router.get('/:id', this.imageController.getImageById)
