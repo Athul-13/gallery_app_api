@@ -1,6 +1,6 @@
 import { Image } from '@/models/image'
 import { IImageRepository } from './interface/image.repository.interface'
-import { ICreateImage, IImage } from '@/types/image'
+import { ICreateImage, IImage, IUpdateImage } from '@/types/image'
 import mongoose from 'mongoose'
 
 /**
@@ -57,5 +57,13 @@ export class ImageRepository implements IImageRepository {
       ...imageData,
       ownerId: ownerId as any,
     } as any)
+  }
+
+  async delete(id: string): Promise<void> {
+    await Image.findByIdAndDelete(id)
+  }
+
+  async update(id: string, imageData: IUpdateImage): Promise<IImage | null> {
+    return Image.findByIdAndUpdate(id, imageData, { new: true, runValidators: true })
   }
 }

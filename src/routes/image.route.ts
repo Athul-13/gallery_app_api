@@ -23,7 +23,14 @@ export class ImageRoute implements IRoutes {
     // Get all images for authenticated user
     router.get('/get', this.imageController.getUserImages)
 
-    // Get image by ID
+    // Delete image by ID (must come before GET /:id to avoid route conflicts)
+    router.delete('/:id/delete', this.imageController.deleteImage)
+
+    // Update image by ID (must come before GET /:id to avoid route conflicts)
+    // Accepts optional file upload for replacing the image
+    router.put('/:id/update', uploadAny, this.imageController.updateImage)
+
+    // Get image by ID (must be last to avoid conflicts with other routes)
     router.get('/:id', this.imageController.getImageById)
 
     return router

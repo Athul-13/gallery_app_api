@@ -1,4 +1,4 @@
-import { IImage, ICreateImage } from '@/types/image'
+import { IImage, ICreateImage, IUpdateImage } from '@/types/image'
 
 /**
  * Image repository interface
@@ -36,4 +36,19 @@ export interface IImageRepository {
    * @returns Created image document
    */
   create(imageData: ICreateImage): Promise<IImage>
+
+  /**
+   * Delete an image by ID
+   * @param id - Image ID
+   * @returns void
+   */
+  delete(id: string): Promise<void>
+
+  /**
+   * Update an image by ID
+   * @param id - Image ID
+   * @param imageData - Image update data
+   * @returns Updated image document or null if not found
+   */
+  update(id: string, imageData: IUpdateImage): Promise<IImage | null>
 }

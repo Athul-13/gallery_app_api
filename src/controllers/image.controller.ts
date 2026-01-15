@@ -4,6 +4,8 @@ import {
   IUploadImagesRequest,
   IGetImageByIdRequest,
   IGetUserImagesRequest,
+  IDeleteImageRequest,
+  IUpdateImageRequest,
 } from '@/types'
 import { IImageController } from './interface'
 
@@ -148,6 +150,81 @@ export class ImageController implements IImageController {
       return res.status(200).json({
         success: true,
         data: result,
+      })
+    } catch (error: any) {
+      throw error
+    }
+  }
+
+  /**
+   * Delete an image by ID
+   */
+  deleteImage = async (req: IDeleteImageRequest, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+      })
+    }
+
+    const { id } = req.params
+    const userId = req.user.userId
+
+    try {
+      await this.imageService.deleteImage(id, userId)
+
+      return res.status(200).json({
+        success: true,
+        message: 'Image deleted successfully',
+      })
+    } catch (error: any) {
+      throw error
+    }
+  }
+
+  /**
+   * Update an image by ID
+   * Supports updating title, order, or replacing the image file
+   */
+  updateImage = async (req: IUpdateImageRequest, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+      })
+    }
+
+    const { id } = req.params
+    const userId = req.user.userId
+
+    // Extract file from request (multer attaches to req.file or req.files)
+    let file: Express.Multer.File | undefined
+
+    if (req.file) {
+      // Single file upload
+      file = req.file
+    } else if (req.files) {
+      // Multiple files upload - take first file if array
+      if (Array.isArray(req.files) && req.files.length > 0) {
+        file = req.files[0]
+      } else if (typeof req.files === 'object') {
+        // If it's an object, extract first file from all fields
+        const filesArray = Object.values(req.files).flat()
+        file = filesArray[0]
+      }
+    }
+
+    try {
+      const updatedImage = await this.imageService.updateImage(
+        id,
+        userId,
+        req.body,
+        file
+      )
+
+      return res.status(200).json({
+        success: true,
+        data: updatedImage,
       })
     } catch (error: any) {
       throw error

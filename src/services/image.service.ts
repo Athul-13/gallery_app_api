@@ -4,11 +4,14 @@ import {
   IImageResponse,
   IBulkImageResponse,
   createError,
+  IUpdateImage,
 } from '@/types'
 import { IImageRepository } from '@/repositories/interface'
 import {
+  deleteImageFromS3,
   uploadImageToS3,
   uploadMultipleImagesToS3,
+  updateImageInS3,
 } from '@/utils/s3'
 import { logger } from '@/config/logger'
 import { IImageService } from './interface'
@@ -168,6 +171,117 @@ export class ImageService implements IImageService {
       total: result.total,
       page,
       limit,
+    }
+  }
+
+  /**
+   * Delete an image by ID
+   * @param imageId - Image ID
+   * @param userId - User ID for ownership verification
+   * @returns void
+   */
+  async deleteImage(imageId: string, userId: string): Promise<void> {
+    // 1. Find image and verify ownership
+    const image = await this.imageRepo.findById(imageId)
+    if (!image) {
+      throw createError(404, 'Image not found')
+    }
+
+    // Check ownership
+    if (image.ownerId.toString() !== userId) {
+      throw createError(403, 'You do not have permission to delete this image')
+    }
+
+    try {
+      // 2. Delete from S3 first (if this fails, we don't delete from DB)
+      await deleteImageFromS3(image.url)
+
+      // 3. Delete from database
+      await this.imageRepo.delete(imageId)
+
+      logger.info('Image deleted', {
+        imageId: image._id.toString(),
+        userId,
+      })
+    } catch (error: any) {
+      logger.error('Failed to delete image', {
+        imageId: image._id.toString(),
+        userId,
+        error,
+      })
+      throw error // Re-throw to preserve error status codes
+    }
+  }
+
+  /**
+   * Update an image by ID
+   * @param imageId - Image ID
+   * @param userId - User ID for ownership verification
+   * @param imageData - Image update data (title, order, etc.)
+   * @param file - Optional file to replace the image
+   * @returns Updated image response
+   */
+  async updateImage(
+    imageId: string,
+    userId: string,
+    imageData: IUpdateImage,
+    file?: Express.Multer.File
+  ): Promise<IImageResponse> {
+    // 1. Find image and verify ownership
+    const existingImage = await this.imageRepo.findById(imageId)
+    if (!existingImage) {
+      throw createError(404, 'Image not found')
+    }
+
+    // Check ownership
+    if (existingImage.ownerId.toString() !== userId) {
+      throw createError(403, 'You do not have permission to update this image')
+    }
+
+    try {
+      // 2. If file is provided, update image in S3 (upload new, delete old)
+      if (file) {
+        const s3Result = await updateImageInS3(
+          file,
+          userId,
+          existingImage.url,
+          imageData.title
+        )
+
+        // Update URL with new S3 URL
+        imageData.url = s3Result.url
+
+        logger.info('Image file updated in S3', {
+          imageId: existingImage._id.toString(),
+          userId,
+          oldKey: s3Result.oldKey,
+          newKey: s3Result.key,
+        })
+      }
+
+      // 3. Update in database (metadata: title, order, and URL if file was uploaded)
+      const updatedImage = await this.imageRepo.update(imageId, imageData)
+
+      // Handle case where image was deleted between existence check and update
+      if (!updatedImage) {
+        throw createError(404, 'Image not found')
+      }
+
+      logger.info('Image updated', {
+        imageId: existingImage._id.toString(),
+        userId,
+        updatedFields: Object.keys(imageData),
+        fileReplaced: !!file,
+      })
+
+      return this.formatImageResponse(updatedImage)
+    } catch (error: any) {
+      logger.error('Failed to update image', {
+        imageId: existingImage._id.toString(),
+        userId,
+        error,
+      })
+      throw error // Re-throw to preserve error status codes
     }
   }
 }

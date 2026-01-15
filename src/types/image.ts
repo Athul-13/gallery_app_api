@@ -34,6 +34,12 @@ export interface ICreateBulkImages {
   ownerId: string
 }
 
+export interface IUpdateImage {
+  title?: string
+  url?: string
+  order?: number
+}
+
 /**
  * Image response (without internal fields)
  */
@@ -89,4 +95,24 @@ export interface IGetUserImagesRequest extends IAuthenticatedRequest {
     page?: string
     limit?: string
   }
+}
+
+/**
+ * Delete image request (with params)
+ */
+export interface IDeleteImageRequest extends IAuthenticatedRequest {
+  params: {
+    id: string
+  }
+}
+
+/**
+ * Update image request (with params, body, and optional file)
+ */
+export interface IUpdateImageRequest extends IAuthenticatedRequest {
+  params: {
+    id: string
+  }
+  body: IUpdateImage
+  file?: Express.Multer.File
 }

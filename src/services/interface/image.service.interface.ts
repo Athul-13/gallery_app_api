@@ -1,4 +1,4 @@
-import { IImageResponse, IBulkImageResponse } from '@/types/image'
+import { IImageResponse, IBulkImageResponse, IUpdateImage } from '@/types/image'
 
 /**
  * Image service interface
@@ -45,4 +45,27 @@ export interface IImageService {
     userId: string,
     options?: { page?: number; limit?: number }
   ): Promise<{ images: IImageResponse[]; total: number; page: number; limit: number }>
+
+  /**
+   * Delete an image by ID
+   * @param imageId - Image ID
+   * @param userId - User ID for ownership verification
+   * @returns void
+   */
+  deleteImage(imageId: string, userId: string): Promise<void>
+
+  /**
+   * Update an image by ID
+   * @param imageId - Image ID
+   * @param userId - User ID for ownership verification
+   * @param imageData - Image update data (title, order, etc.)
+   * @param file - Optional file to replace the image
+   * @returns Updated image response
+   */
+  updateImage(
+    imageId: string,
+    userId: string,
+    imageData: IUpdateImage,
+    file?: Express.Multer.File
+  ): Promise<IImageResponse>
 }

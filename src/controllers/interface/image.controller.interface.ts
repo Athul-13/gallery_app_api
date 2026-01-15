@@ -3,6 +3,8 @@ import {
   IUploadImagesRequest,
   IGetImageByIdRequest,
   IGetUserImagesRequest,
+  IDeleteImageRequest,
+  IUpdateImageRequest,
 } from '@/types/image'
 
 /**
@@ -24,4 +26,14 @@ export interface IImageController {
    * Get all images for authenticated user
    */
   getUserImages(req: IGetUserImagesRequest, res: Response): Promise<Response | void>
+
+  /**
+   * Delete an image by ID
+   */
+  deleteImage(req: IDeleteImageRequest, res: Response): Promise<Response | void>
+
+  /**
+   * Update an image by ID
+   */
+  updateImage(req: IUpdateImageRequest, res: Response): Promise<Response | void>
 }
