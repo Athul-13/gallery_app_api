@@ -6,6 +6,7 @@ import {
   IGetUserImagesRequest,
   IDeleteImageRequest,
   IUpdateImageRequest,
+  IBulkOrderUpdateRequest,
 } from '@/types'
 import { IImageController } from './interface'
 
@@ -225,6 +226,56 @@ export class ImageController implements IImageController {
       return res.status(200).json({
         success: true,
         data: updatedImage,
+      })
+    } catch (error: any) {
+      throw error
+    }
+  }
+
+  /**
+   * Bulk update order for multiple images
+   */
+  bulkUpdateOrder = async (req: IBulkOrderUpdateRequest, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+      })
+    }
+
+    const userId = req.user.userId
+    const { orders } = req.body
+
+    // Validate request body
+    if (!orders || !Array.isArray(orders) || orders.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Orders array is required and must not be empty',
+      })
+    }
+
+    // Validate each order object
+    for (const order of orders) {
+      if (!order.id || typeof order.id !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'Each order must have a valid id (string)',
+        })
+      }
+      if (typeof order.order !== 'number' || order.order < 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Each order must have a valid order (non-negative number)',
+        })
+      }
+    }
+
+    try {
+      const result = await this.imageService.bulkUpdateOrder(orders, userId)
+
+      return res.status(200).json({
+        success: true,
+        data: result,
       })
     } catch (error: any) {
       throw error

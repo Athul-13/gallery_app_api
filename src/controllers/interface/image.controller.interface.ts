@@ -5,6 +5,7 @@ import {
   IGetUserImagesRequest,
   IDeleteImageRequest,
   IUpdateImageRequest,
+  IBulkOrderUpdateRequest,
 } from '@/types/image'
 
 /**
@@ -36,4 +37,12 @@ export interface IImageController {
    * Update an image by ID
    */
   updateImage(req: IUpdateImageRequest, res: Response): Promise<Response | void>
+
+  /**
+   * Bulk update order for multiple images
+   */
+  bulkUpdateOrder(
+    req: IBulkOrderUpdateRequest,
+    res: Response
+  ): Promise<Response | void>
 }

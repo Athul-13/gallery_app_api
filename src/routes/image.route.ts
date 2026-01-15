@@ -30,6 +30,9 @@ export class ImageRoute implements IRoutes {
     // Accepts optional file upload for replacing the image
     router.put('/:id/update', uploadAny, this.imageController.updateImage)
 
+    // Bulk update order for multiple images
+    router.put('/bulk-update-order', this.imageController.bulkUpdateOrder)
+
     // Get image by ID (must be last to avoid conflicts with other routes)
     router.get('/:id', this.imageController.getImageById)
 

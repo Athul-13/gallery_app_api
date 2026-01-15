@@ -5,6 +5,7 @@ import {
   IBulkImageResponse,
   createError,
   IUpdateImage,
+  IBulkOrderUpdateResponse,
 } from '@/types'
 import { IImageRepository } from '@/repositories/interface'
 import {
@@ -281,6 +282,69 @@ export class ImageService implements IImageService {
         userId,
         error,
       })
+      throw error // Re-throw to preserve error status codes
+    }
+  }
+
+  /**
+   * Bulk update order for multiple images
+   * @param orders - Array of { id, order } pairs
+   * @param userId - User ID for ownership verification
+   * @returns Bulk order update response with updated images
+   */
+  async bulkUpdateOrder(
+    orders: Array<{ id: string; order: number }>,
+    userId: string
+  ): Promise<IBulkOrderUpdateResponse> {
+    if (!orders || orders.length === 0) {
+      throw createError(400, 'No orders provided')
+    }
+
+    try {
+      // 1. Fetch all images to verify ownership
+      const imageIds = orders.map((o) => o.id)
+      const images = await this.imageRepo.findByIds(imageIds)
+
+      if (images.length !== imageIds.length) {
+        throw createError(404, 'One or more images not found')
+      }
+
+      // 2. Verify all images belong to the user
+      const unauthorizedImages = images.filter(
+        (img) => img.ownerId.toString() !== userId
+      )
+      if (unauthorizedImages.length > 0) {
+        throw createError(
+          403,
+          'You do not have permission to update one or more images'
+        )
+      }
+
+      // 3. Recalculate sequential order values (0, 1, 2, 3...)
+      // Sort orders by the provided order value, then assign sequential values
+      const sortedOrders = [...orders].sort((a, b) => a.order - b.order)
+      const sequentialOrders = sortedOrders.map((order, index) => ({
+        id: order.id,
+        order: index,
+      }))
+
+      // 4. Bulk update orders in database
+      const updatedImages = await this.imageRepo.bulkUpdateOrder(
+        sequentialOrders
+      )
+
+      logger.info('Bulk order update completed', {
+        count: updatedImages.length,
+        userId,
+      })
+
+      // 5. Format and return response
+      return {
+        images: updatedImages.map((img) => this.formatImageResponse(img)),
+        total: updatedImages.length,
+      }
+    } catch (error: any) {
+      logger.error('Failed to bulk update order', { error, userId })
       throw error // Re-throw to preserve error status codes
     }
   }

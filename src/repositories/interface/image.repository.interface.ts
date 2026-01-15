@@ -51,4 +51,13 @@ export interface IImageRepository {
    * @returns Updated image document or null if not found
    */
   update(id: string, imageData: IUpdateImage): Promise<IImage | null>
+
+  /**
+   * Bulk update order for multiple images
+   * @param orders - Array of { id, order } pairs
+   * @returns Array of updated image documents
+   */
+  bulkUpdateOrder(
+    orders: Array<{ id: string; order: number }>
+  ): Promise<IImage[]>
 }

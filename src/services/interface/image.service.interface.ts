@@ -68,4 +68,15 @@ export interface IImageService {
     imageData: IUpdateImage,
     file?: Express.Multer.File
   ): Promise<IImageResponse>
+
+  /**
+   * Bulk update order for multiple images
+   * @param orders - Array of { id, order } pairs
+   * @param userId - User ID for ownership verification
+   * @returns Bulk order update response with updated images
+   */
+  bulkUpdateOrder(
+    orders: Array<{ id: string; order: number }>,
+    userId: string
+  ): Promise<{ images: IImageResponse[]; total: number }>
 }

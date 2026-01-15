@@ -66,4 +66,22 @@ export class ImageRepository implements IImageRepository {
   async update(id: string, imageData: IUpdateImage): Promise<IImage | null> {
     return Image.findByIdAndUpdate(id, imageData, { new: true, runValidators: true })
   }
+
+  async bulkUpdateOrder(
+    orders: Array<{ id: string; order: number }>
+  ): Promise<IImage[]> {
+    // Use bulkWrite for efficient batch updates
+    const bulkOps = orders.map(({ id, order }) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { $set: { order } },
+      },
+    }))
+
+    await Image.bulkWrite(bulkOps)
+
+    // Fetch and return updated images
+    const ids = orders.map((o) => o.id)
+    return Image.find({ _id: { $in: ids } })
+  }
 }

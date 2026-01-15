@@ -116,3 +116,28 @@ export interface IUpdateImageRequest extends IAuthenticatedRequest {
   body: IUpdateImage
   file?: Express.Multer.File
 }
+
+/**
+ * Bulk order update request body
+ */
+export interface IBulkOrderUpdateBody {
+  orders: Array<{
+    id: string
+    order: number
+  }>
+}
+
+/**
+ * Bulk order update request
+ */
+export interface IBulkOrderUpdateRequest extends IAuthenticatedRequest {
+  body: IBulkOrderUpdateBody
+}
+
+/**
+ * Bulk order update response
+ */
+export interface IBulkOrderUpdateResponse {
+  images: IImageResponse[]
+  total: number
+}
