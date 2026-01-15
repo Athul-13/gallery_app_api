@@ -31,7 +31,7 @@ const imageSchema = new Schema<IImage>(
 imageSchema.index({ ownerId: 1, order: 1 })
 
 // Pre-save hook to auto-increment order if not provided
-imageSchema.pre('save', async function (next) {
+imageSchema.pre('save', async function () {
     const doc = this as unknown as IImage & mongoose.Document
     if (doc.isNew && (doc.order === undefined || doc.order === 0)) {
         try {
@@ -43,10 +43,10 @@ imageSchema.pre('save', async function (next) {
             
             doc.order = maxOrderImage ? maxOrderImage.order + 1 : 1
         } catch (error) {
-            return (next as any)(error as Error)
+            throw error // Just throw, don't call next()
         }
     }
-    return (next as any)()
+    // No need to call next() - just return normally
 })
 
 export const Image = mongoose.model<IImage>("Image", imageSchema)

@@ -8,7 +8,7 @@ import {
   AWS_S3_BUCKET_URL,
   AWS_MAX_FILE_SIZE,
   AWS_ALLOWED_MIME_TYPES,
-  AWS_S3_ACL,
+  // AWS_S3_ACL,
 } from '@/config/env'
 import { logger } from '@/config/logger'
 import { createError } from '@/types/errors'
@@ -207,7 +207,7 @@ export const uploadImageToS3 = async (
       Key: key,
       Body: file.buffer,
       ContentType: file.mimetype,
-      ACL: AWS_S3_ACL as 'public-read' | 'private',
+      // ACL: AWS_S3_ACL as 'public-read' | 'private',
       Metadata: {
         userId,
         originalFilename: file.originalname,
