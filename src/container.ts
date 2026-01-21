@@ -1,8 +1,8 @@
 import { AuthController, ImageController } from '@/controllers'
-import { AuthService, PasswordService, UserService, ImageService, JwtService } from '@/services'
+import { AuthService, PasswordService, UserService, ImageService, JwtService, StorageService } from '@/services'
 import { UserRepository, ImageRepository } from '@/repositories'
 import { IAuthController, IImageController } from '@/controllers/interface'
-import { IAuthService, IPasswordService, IUserService, IImageService, IJwtService } from '@/services/interface'
+import { IAuthService, IPasswordService, IUserService, IImageService, IJwtService, IStorageService } from '@/services/interface'
 import { IUserRepository, IImageRepository } from '@/repositories/interface'
 
 class Container {
@@ -38,6 +38,7 @@ class Container {
 
     // Register utility services (foundation layer)
     this.register<IJwtService>('jwtService', () => new JwtService())
+    this.register<IStorageService>('storageService', () => new StorageService())
 
     // Register services (middle layer)
     this.register<IAuthService>('authService', () => 
@@ -59,7 +60,10 @@ class Container {
     )
 
     this.register<IImageService>('imageService', () => 
-      new ImageService(this.get<IImageRepository>('imageRepository'))
+      new ImageService(
+        this.get<IImageRepository>('imageRepository'),
+        this.get<IStorageService>('storageService')
+      )
     )
 
     // Register controllers (top layer)
@@ -84,6 +88,7 @@ container.initialize()
 export const getUserRepository = () => container.get<IUserRepository>('userRepository')
 export const getImageRepository = () => container.get<IImageRepository>('imageRepository')
 export const getJwtService = () => container.get<IJwtService>('jwtService')
+export const getStorageService = () => container.get<IStorageService>('storageService')
 export const getAuthService = () => container.get<IAuthService>('authService')
 export const getPasswordService = () => container.get<IPasswordService>('passwordService')
 export const getUserService = () => container.get<IUserService>('userService')

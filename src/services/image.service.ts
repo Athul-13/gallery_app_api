@@ -8,21 +8,18 @@ import {
   IBulkOrderUpdateResponse,
 } from '@/types'
 import { IImageRepository } from '@/repositories/interface'
-import {
-  deleteImageFromS3,
-  uploadImageToS3,
-  uploadMultipleImagesToS3,
-  updateImageInS3,
-} from '@/utils/s3'
 import { logger } from '@/config/logger'
-import { IImageService } from './interface'
+import { IImageService, IStorageService } from './interface'
 
 /**
  * Image service
  * Handles image upload, retrieval, and business logic
  */
 export class ImageService implements IImageService {
-  constructor(private imageRepo: IImageRepository) {}
+  constructor(
+    private imageRepo: IImageRepository,
+    private storageService: IStorageService
+  ) {}
 
   /**
    * Format image document to response format
@@ -53,7 +50,7 @@ export class ImageService implements IImageService {
   ): Promise<IImageResponse> {
     try {
       // 1. Upload to S3
-      const s3Result = await uploadImageToS3(file, userId, title)
+      const s3Result = await this.storageService.uploadImage(file, userId, title)
 
       // 2. Save to database
       const image = await this.imageRepo.create({
@@ -89,7 +86,7 @@ export class ImageService implements IImageService {
   ): Promise<IBulkImageResponse> {
     try {
       // 1. Upload all to S3 (parallel)
-      const s3Results = await uploadMultipleImagesToS3(files, userId)
+      const s3Results = await this.storageService.uploadMultipleImages(files, userId)
 
       // 2. Prepare data for database
       const imagesData: ICreateImage[] = s3Results.map((result, index) => {
@@ -195,7 +192,7 @@ export class ImageService implements IImageService {
 
     try {
       // 2. Delete from S3 first (if this fails, we don't delete from DB)
-      await deleteImageFromS3(image.url)
+      await this.storageService.deleteImage(image.url)
 
       // 3. Delete from database
       await this.imageRepo.delete(imageId)
@@ -242,7 +239,7 @@ export class ImageService implements IImageService {
     try {
       // 2. If file is provided, update image in S3 (upload new, delete old)
       if (file) {
-        const s3Result = await updateImageInS3(
+        const s3Result = await this.storageService.updateImage(
           file,
           userId,
           existingImage.url,

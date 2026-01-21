@@ -4,6 +4,7 @@ export * from './password.service'
 export * from './user.service'
 export * from './image.service'
 export * from './jwt.service'
+export * from './storage.service'
 
 // Export service interfaces
 export * from './interface'
