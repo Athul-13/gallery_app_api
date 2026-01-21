@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express'
-import { verifyToken } from '@/utils/jwt'
+import { getJwtService } from '@/container'
 import { getAccessTokenCookie } from '@/utils/cookie'
 import { createError } from '@/types/errors'
 import { IAuthenticatedRequest, IJWTPayload } from '@/types/auth'
@@ -29,7 +29,8 @@ export const authenticate = (
     return next(createError(401, 'Authentication required'))
   }
 
-  const payload = verifyToken<IJWTPayload>(token)
+  const jwtService = getJwtService()
+  const payload = jwtService.verifyToken<IJWTPayload>(token)
 
   req.user = {
     userId: payload.userId,

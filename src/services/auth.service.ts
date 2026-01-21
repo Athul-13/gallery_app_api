@@ -5,9 +5,8 @@ import {
 } from '@/types'
 import { IUserRepository } from '@/repositories/interface'
 import { hashPassword, validatePasswordStrength } from '@/utils/password'
-import { generateTokenPair, verifyToken } from '@/utils/jwt'
 import { logger } from '@/config/logger'
-import { IAuthService } from './interface'
+import { IAuthService, IJwtService } from './interface'
 
 /**
  * Authentication service
@@ -15,7 +14,8 @@ import { IAuthService } from './interface'
  */
 export class AuthService implements IAuthService {
   constructor(
-    private repo: IUserRepository
+    private repo: IUserRepository,
+    private jwtService: IJwtService
   ) {}
 
   /**
@@ -78,7 +78,7 @@ export class AuthService implements IAuthService {
       throw createError(401, 'Invalid email or password')
     }
 
-    const tokens = generateTokenPair({
+    const tokens = this.jwtService.generateTokenPair({
       userId: user._id.toString(),
       email: user.email,
     })
@@ -101,14 +101,14 @@ export class AuthService implements IAuthService {
    * @returns New access token
    */
   async refreshAccessToken(refreshToken: string) {
-    const payload = verifyToken(refreshToken)
+    const payload = this.jwtService.verifyToken(refreshToken)
 
     const user = await this.repo.findById(payload.userId)
     if (!user) {
       throw createError(401, 'User not found')
     }
 
-    const { accessToken } = generateTokenPair({
+    const { accessToken } = this.jwtService.generateTokenPair({
       userId: user._id.toString(),
       email: user.email,
     })

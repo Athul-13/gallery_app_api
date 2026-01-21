@@ -5,12 +5,11 @@ import {
 } from '@/types'
 import { IUserRepository } from '@/repositories/interface'
 import { hashPassword, verifyPassword, validatePasswordStrength } from '@/utils/password'
-import { verifyToken, generatePasswordResetToken } from '@/utils/jwt'
 import { logger } from '@/config/logger'
 import { sendEmail } from '@/utils/email'
 import { generatePasswordResetEmailTemplate, generatePasswordResetEmailText } from '@/utils/emailTemplates'
 import { CORS_ORIGIN } from '@/config/env'
-import { IPasswordService } from './interface'
+import { IPasswordService, IJwtService } from './interface'
 
 // Use CORS_ORIGIN as frontend URL, fallback to localhost for development
 const FRONTEND_URL = CORS_ORIGIN || 'http://localhost:5173'
@@ -21,7 +20,8 @@ const FRONTEND_URL = CORS_ORIGIN || 'http://localhost:5173'
  */
 export class PasswordService implements IPasswordService {
   constructor(
-    private repo: IUserRepository
+    private repo: IUserRepository,
+    private jwtService: IJwtService
   ) {}
 
   /**
@@ -36,7 +36,7 @@ export class PasswordService implements IPasswordService {
       return { message: 'If the email exists, a password reset link has been sent' }
     }
 
-    const resetToken = generatePasswordResetToken({
+    const resetToken = this.jwtService.generatePasswordResetToken({
       userId: user._id.toString(),
       email: user.email,
       type: 'password-reset',
@@ -78,7 +78,7 @@ export class PasswordService implements IPasswordService {
   async resetPassword(resetData: IPasswordResetInput) {
     const { token, newPassword } = resetData
 
-    const payload = verifyToken<IPasswordResetTokenPayload>(token)
+    const payload = this.jwtService.verifyToken<IPasswordResetTokenPayload>(token)
     
     if (payload.type !== 'password-reset') {
       throw createError(401, 'Invalid token type')

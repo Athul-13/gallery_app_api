@@ -1,8 +1,8 @@
 import { AuthController, ImageController } from '@/controllers'
-import { AuthService, PasswordService, UserService, ImageService } from '@/services'
+import { AuthService, PasswordService, UserService, ImageService, JwtService } from '@/services'
 import { UserRepository, ImageRepository } from '@/repositories'
 import { IAuthController, IImageController } from '@/controllers/interface'
-import { IAuthService, IPasswordService, IUserService, IImageService } from '@/services/interface'
+import { IAuthService, IPasswordService, IUserService, IImageService, IJwtService } from '@/services/interface'
 import { IUserRepository, IImageRepository } from '@/repositories/interface'
 
 class Container {
@@ -36,13 +36,22 @@ class Container {
     this.register<IUserRepository>('userRepository', () => new UserRepository())
     this.register<IImageRepository>('imageRepository', () => new ImageRepository())
 
+    // Register utility services (foundation layer)
+    this.register<IJwtService>('jwtService', () => new JwtService())
+
     // Register services (middle layer)
     this.register<IAuthService>('authService', () => 
-      new AuthService(this.get<IUserRepository>('userRepository'))
+      new AuthService(
+        this.get<IUserRepository>('userRepository'),
+        this.get<IJwtService>('jwtService')
+      )
     )
     
     this.register<IPasswordService>('passwordService', () => 
-      new PasswordService(this.get<IUserRepository>('userRepository'))
+      new PasswordService(
+        this.get<IUserRepository>('userRepository'),
+        this.get<IJwtService>('jwtService')
+      )
     )
     
     this.register<IUserService>('userService', () => 
@@ -74,6 +83,7 @@ container.initialize()
 // Export convenience getters
 export const getUserRepository = () => container.get<IUserRepository>('userRepository')
 export const getImageRepository = () => container.get<IImageRepository>('imageRepository')
+export const getJwtService = () => container.get<IJwtService>('jwtService')
 export const getAuthService = () => container.get<IAuthService>('authService')
 export const getPasswordService = () => container.get<IPasswordService>('passwordService')
 export const getUserService = () => container.get<IUserService>('userService')
