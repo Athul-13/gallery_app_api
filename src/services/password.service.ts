@@ -5,9 +5,14 @@ import {
 } from '@/types'
 import { IUserRepository } from '@/repositories/interface'
 import { hashPassword, verifyPassword, validatePasswordStrength } from '@/utils/password'
-import { verifyToken, generatePasswordResetToken } from '@/utils/jwt'
 import { logger } from '@/config/logger'
-import { IPasswordService } from './interface'
+import { sendEmail } from '@/utils/email'
+import { generatePasswordResetEmailTemplate, generatePasswordResetEmailText } from '@/utils/emailTemplates'
+import { CORS_ORIGIN } from '@/config/env'
+import { IPasswordService, IJwtService } from './interface'
+
+// Use CORS_ORIGIN as frontend URL, fallback to localhost for development
+const FRONTEND_URL = CORS_ORIGIN || 'http://localhost:5173'
 
 /**
  * Password service
@@ -15,7 +20,8 @@ import { IPasswordService } from './interface'
  */
 export class PasswordService implements IPasswordService {
   constructor(
-    private repo: IUserRepository
+    private repo: IUserRepository,
+    private jwtService: IJwtService
   ) {}
 
   /**
@@ -30,14 +36,34 @@ export class PasswordService implements IPasswordService {
       return { message: 'If the email exists, a password reset link has been sent' }
     }
 
-    const resetToken = generatePasswordResetToken({
+    const resetToken = this.jwtService.generatePasswordResetToken({
       userId: user._id.toString(),
       email: user.email,
       type: 'password-reset',
     })
 
-    logger.info(`Password reset requested for: ${user.email}`)
+    // Generate reset link
+    const resetLink = `${FRONTEND_URL}/reset-password?token=${resetToken}`
 
+    // Send password reset email
+    try {
+      const htmlTemplate = generatePasswordResetEmailTemplate(resetLink, user.email.split('@')[0])
+      const textTemplate = generatePasswordResetEmailText(resetLink, user.email.split('@')[0])
+      
+      await sendEmail(
+        user.email,
+        'Reset Your Password - Galley',
+        htmlTemplate,
+        textTemplate
+      )
+      
+      logger.info(`Password reset email sent to: ${user.email}`)
+    } catch (error) {
+      logger.error(`Failed to send password reset email to ${user.email}:`, error)
+      // Still return success message to prevent email enumeration
+    }
+
+    // In development, also return the token for testing
     return {
       message: 'If the email exists, a password reset link has been sent',
       resetToken: process.env.NODE_ENV === 'development' ? resetToken : undefined,
@@ -52,7 +78,7 @@ export class PasswordService implements IPasswordService {
   async resetPassword(resetData: IPasswordResetInput) {
     const { token, newPassword } = resetData
 
-    const payload = verifyToken<IPasswordResetTokenPayload>(token)
+    const payload = this.jwtService.verifyToken<IPasswordResetTokenPayload>(token)
     
     if (payload.type !== 'password-reset') {
       throw createError(401, 'Invalid token type')

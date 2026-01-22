@@ -1,0 +1,63 @@
+import { IImage, ICreateImage, IUpdateImage } from '@/types/image'
+
+/**
+ * Image repository interface
+ * Defines the contract for image data access operations
+ */
+export interface IImageRepository {
+  /**
+   * Find image by ID
+   * @param id - Image ID
+   * @returns Image document or null if not found
+   */
+  findById(id: string): Promise<IImage | null>
+
+  /**
+   * Find all images by owner ID with pagination
+   * @param ownerId - Owner user ID
+   * @param options - Pagination options
+   * @returns Object with images array and total count
+   */
+  findByOwnerId(
+    ownerId: string,
+    options?: { page?: number; limit?: number }
+  ): Promise<{ images: IImage[]; total: number }>
+
+  /**
+   * Find multiple images by IDs
+   * @param ids - Array of image IDs
+   * @returns Array of image documents
+   */
+  findByIds(ids: string[]): Promise<IImage[]>
+
+  /**
+   * Create a new image
+   * @param imageData - Image creation data
+   * @returns Created image document
+   */
+  create(imageData: ICreateImage): Promise<IImage>
+
+  /**
+   * Delete an image by ID
+   * @param id - Image ID
+   * @returns void
+   */
+  delete(id: string): Promise<void>
+
+  /**
+   * Update an image by ID
+   * @param id - Image ID
+   * @param imageData - Image update data
+   * @returns Updated image document or null if not found
+   */
+  update(id: string, imageData: IUpdateImage): Promise<IImage | null>
+
+  /**
+   * Bulk update order for multiple images
+   * @param orders - Array of { id, order } pairs
+   * @returns Array of updated image documents
+   */
+  bulkUpdateOrder(
+    orders: Array<{ id: string; order: number }>
+  ): Promise<IImage[]>
+}

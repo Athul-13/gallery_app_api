@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { AuthRoute } from './auth.route'
-import { getAuthController } from '@/container'
+import { ImageRoute } from './image.route'
+import { getAuthController, getImageController } from '@/container'
 
 /**
  * Create and configure routes
@@ -12,8 +13,12 @@ export const createRoutes = (): Router => {
   const authController = getAuthController()
   const authRoute = new AuthRoute(authController)
 
+  const imageController = getImageController()
+  const imageRoute = new ImageRoute(imageController)
+
   // Mount route modules
   router.use('/auth', authRoute.getRouter())
+  router.use('/images', imageRoute.getRouter())
 
   return router
 }

@@ -1,3 +1,6 @@
 export * from './auth.service.interface'
 export * from './password.service.interface'
 export * from './user.service.interface'
+export * from './image.service.interface'
+export * from './jwt.service.interface'
+export * from './storage.service.interface'
